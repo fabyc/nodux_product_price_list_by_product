@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<form string="Listas de Precios" col="6">
+    <label name="template"/>
+    <field name="template"/>
+    <label name="lista_precio"/>
+    <field name="lista_precio"/>
+    <label name="fijo"/>
+    <field name="fijo"/>
+    <label name="con_iva"/>
+    <field name="con_iva"/>
+    <newline/>
+    <label name="incluir_barra"/>
+    <field name="incluir_barra"/>
+</form>
