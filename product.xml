@@ -9,5 +9,25 @@ this repository contains the full copyright notices and license terms. -->
           <field name="name">template_form</field>
       </record>
 
+      <record model="ir.ui.view" id="list_by_product_view_tree">
+          <field name="model">product.list_by_product</field>
+          <field name="type">tree</field>
+          <field name="priority" eval="10"/>
+          <field name="name">list_by_product_tree</field>
+      </record>
+
+      <record model="ir.ui.view" id="list_by_product_view_tree_sequence">
+          <field name="model">product.list_by_product</field>
+          <field name="type">tree</field>
+          <field name="priority" eval="20"/>
+          <field name="name">list_by_product_tree_sequence</field>
+      </record>
+
+      <record model="ir.ui.view" id="list_by_product_view_form">
+          <field name="model">product.list_by_product</field>
+          <field name="type">form</field>
+          <field name="name">list_by_product_form</field>
+      </record>
+
   </data>
 </tryton>

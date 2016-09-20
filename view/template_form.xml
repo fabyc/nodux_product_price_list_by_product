@@ -4,6 +4,7 @@ this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath
         expr="/form/notebook/page[@id='general']/field[@name='products']" position="before">
-        <field name="listas_precios" mode="form,tree" colspan="4"/>
+        <field name="listas_precios" mode="tree, form" colspan="4"
+            view_ids="nodux_product_price_list_by_product.list_by_product_view_tree_sequence,nodux_product_price_list_by_product.list_by_product_view_form"/>
     </xpath>
 </data>

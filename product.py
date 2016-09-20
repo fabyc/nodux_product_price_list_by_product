@@ -27,36 +27,71 @@ class Template:
     def __setup__(cls):
         super(Template, cls).__setup__
 
+    @fields.depends('cost_price', 'listas_precios', 'id')
+    def on_change_cost_price(self):
+        pool = Pool()
+        PriceList = pool.get('product.price_list')
+        User = pool.get('res.user')
+        priceslist = PriceList.search([('incluir_lista', '=', True)])
+        res= {}
+        percentage = 0
+        precio_final = Decimal(0.0)
+        user =  User(Transaction().user)
+        if self.listas_precios:
+            pass
+        else:
+            if self.cost_price:
+                lineas = []
+                for pricelist in priceslist:
+                    for line in pricelist.lines:
+                        if line.percentage > 0:
+                            percentage = line.percentage/100
+                        precio_final = self.cost_price * (1 + percentage)
+                        if user.company.currency:
+                            precio_final = user.company.currency.round(precio_final)
+                    lineas.append({
+                        'lista_precio': pricelist.id,
+                        'fijo' : precio_final
+                    })
+
+                res['listas_precios'] = lineas
+        return res
+
 class ListByProduct(ModelSQL, ModelView):
-    "Product Variant"
+    "List By Product"
     __name__ = "product.list_by_product"
     _order_name = 'rec_name'
     template = fields.Many2One('product.template', 'Product Template',
         required=True, ondelete='CASCADE', select=True, states=STATES,
         depends=DEPENDS)
-    lista_precio = fields.Many2One('product.price_list', 'Product Template',
+    lista_precio = fields.Many2One('product.price_list', 'Lista de Precio',
         required=True, ondelete='CASCADE', select=True, states=STATES,
         depends=DEPENDS)
     fijo = fields.Numeric('Valor fijo', digits=(16, 2))
     con_iva = fields.Boolean('Calcular precio inc. IVA')
-    incluir_barra = fields.Boolean('Utilizar en Impresion de Codigo de Barra')
+
+    @classmethod
+    def __setup__(cls):
+        super(ListByProduct, cls).__setup__()
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo', 'con_iva')
     def on_change_lista_precio(self):
         pool = Pool()
         res= {}
         percentage = 0
+        precio_final = Decimal(0.0)
         if self.lista_precio:
             if self.lista_precio.lines:
                 for line in self.lista_precio.lines:
                     if line.percentage > 0:
                         percentage = line.percentage/100
-            precio_final = self.template.cost_price * (1 + percentage)
+            if self.template.cost_price:
+                precio_final = self.template.cost_price * (1 + percentage)
             res['fijo'] = precio_final
         return res
 
-    @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo', 'con_iva', '_parent_template.taxes_category'
-        '_parent_template.category')
+    @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo', 'con_iva',
+        '_parent_template.category', '_parent_template.account_category', '_parent_template.taxes_category', '_parent_template.id')
     def on_change_con_iva(self):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
@@ -72,9 +107,8 @@ class ListByProduct(ModelSQL, ModelView):
                             taxes2 = Taxes2.search([('product','=', self.template)])
                         else:
                             taxes1= Taxes1.search([('category','=', self.template.category)])
-                            taxes2 = Taxes2.search([('product','=', self.template)])
                     else:
-                        taxes1= Taxes1.search([('category','=',self.template.category)])
+                        taxes1= Taxes1.search([('category','=', self.template.category)])
                         taxes2 = Taxes2.search([('product','=', self.template)])
 
                     if taxes1:
@@ -96,20 +130,19 @@ class ListByProduct(ModelSQL, ModelView):
                             taxes2 = Taxes2.search([('product','=', self.template)])
                         else:
                             taxes1= Taxes1.search([('category','=', self.template.category)])
-                            taxes2 = Taxes2.search([('product','=', self.template)])
                     else:
                         taxes1= Taxes1.search([('category','=',self.template.category)])
                         taxes2 = Taxes2.search([('product','=', self.template)])
 
                     if taxes1:
                         for t in taxes1:
-                            iva = self.fijo * t.tax.rate
+                            iva = t.tax.rate
                     elif taxes2:
                         for t in taxes2:
-                            iva = self.fijo * t.tax.rate
+                            iva = t.tax.rate
                     elif taxes3:
                         for t in taxes3:
-                            iva = self.fijo * t.tax.rate
-                    precio_total = self.fijo - iva
+                            iva = t.tax.rate
+                    precio_total = self.fijo /(1+iva)
                     res['fijo'] = precio_total
         return res
