@@ -49,6 +49,7 @@ class WizardListByProduct(Wizard):
         PriceList = pool.get('product.price_list')
         priceslists = PriceList.browse(Transaction().context['active_ids'])
         user =  User(Transaction().user)
+        incluido = False
         for pricelist in priceslists:
             if pricelist.incluir_lista == False:
                 pass
@@ -56,16 +57,37 @@ class WizardListByProduct(Wizard):
                 products = Product.search([('cost_price', '>', Decimal(0.0))])
                 lineas = []
                 for p in products:
-                    for line in pricelist.lines:
-                        if line.percentage > 0:
-                            percentage = line.percentage/100
-                        precio_final = p.cost_price * (1 + percentage)
-                        if user.company.currency:
-                            precio_final = user.company.currency.round(precio_final)
-                    lineas.append({
-                        'template': p.id,
-                        'lista_precio': pricelist.id,
-                        'fijo' : precio_final
-                    })
+                    if p.listas_precios:
+                        for listas in p.listas_precios:
+                            if pricelist == listas.lista_precio:
+                                incluido = True
+                                break
+                        if incluido == True:
+                            pass
+                        else:
+                            for line in pricelist.lines:
+                                if line.percentage > 0:
+                                    percentage = line.percentage/100
+                                precio_final = p.cost_price * (1 + percentage)
+                                if user.company.currency:
+                                    precio_final = user.company.currency.round(precio_final)
+                            lineas.append({
+                                'template': p.id,
+                                'lista_precio': pricelist.id,
+                                'fijo' : precio_final
+                            })
+
+                    else:
+                        for line in pricelist.lines:
+                            if line.percentage > 0:
+                                percentage = line.percentage/100
+                            precio_final = p.cost_price * (1 + percentage)
+                            if user.company.currency:
+                                precio_final = user.company.currency.round(precio_final)
+                        lineas.append({
+                            'template': p.id,
+                            'lista_precio': pricelist.id,
+                            'fijo' : precio_final
+                        })
         listas_precios = ListByProduct.create(lineas)
         return 'end'
