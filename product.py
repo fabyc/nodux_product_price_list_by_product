@@ -67,7 +67,6 @@ class Template:
 class ListByProduct(ModelSQL, ModelView):
     "List By Product"
     __name__ = "product.list_by_product"
-    _rec_name = 'lista_precio.name'
 
     template = fields.Many2One('product.template', 'Product Template',
         required=True, ondelete='CASCADE', select=True, states=STATES,
@@ -83,6 +82,9 @@ class ListByProduct(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(ListByProduct, cls).__setup__()
+
+    def get_rec_name(self, lista_precio):
+        return self.lista_precio.name
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo', 'con_iva')
     def on_change_lista_precio(self):
