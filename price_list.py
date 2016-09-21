@@ -20,6 +20,7 @@ class PriceList():
     __name__ = 'product.price_list'
 
     incluir_lista = fields.Boolean('Incluir lista de precio en producto')
+    definir_precio_venta = fields.Boolean('Definir como precio de venta', help="Definir como precio de venta principal")
 
     @classmethod
     def __setup__(cls):
@@ -45,6 +46,8 @@ class WizardListByProduct(Wizard):
         pool = Pool()
         User = pool.get('res.user')
         Product = pool.get('product.template')
+        Variante = pool.get('product.product')
+
         ListByProduct = pool.get('product.list_by_product')
         PriceList = pool.get('product.price_list')
         priceslists = PriceList.browse(Transaction().context['active_ids'])
@@ -57,6 +60,9 @@ class WizardListByProduct(Wizard):
                 products = Product.search([('cost_price', '>', Decimal(0.0))])
                 lineas = []
                 for p in products:
+                    variantes = Variante.search([('template', '=', p.id)])
+                    for v in variantes:
+                        variante = v
                     if p.listas_precios:
                         for listas in p.listas_precios:
                             if pricelist == listas.lista_precio:
@@ -71,10 +77,17 @@ class WizardListByProduct(Wizard):
                                 precio_final = p.cost_price * (1 + percentage)
                                 if user.company.currency:
                                     precio_final = user.company.currency.round(precio_final)
+
+                            if pricelist.definir_precio_venta == True:
+                                p.list_price = precio_final
+                                p.save()
+
                             lineas.append({
                                 'template': p.id,
                                 'lista_precio': pricelist.id,
-                                'fijo' : precio_final
+                                'fijo' : precio_final,
+                                'precio_venta': pricelist.definir_precio_venta,
+                                'product': variante.id
                             })
 
                     else:
@@ -84,10 +97,17 @@ class WizardListByProduct(Wizard):
                             precio_final = p.cost_price * (1 + percentage)
                             if user.company.currency:
                                 precio_final = user.company.currency.round(precio_final)
+                                
+                        if pricelist.definir_precio_venta == True:
+                            p.list_price = precio_final
+                            p.save()
+
                         lineas.append({
                             'template': p.id,
                             'lista_precio': pricelist.id,
-                            'fijo' : precio_final
+                            'fijo' : precio_final,
+                            'precio_venta': pricelist.definir_precio_venta,
+                            'product' : variante.id
                         })
         listas_precios = ListByProduct.create(lineas)
         return 'end'

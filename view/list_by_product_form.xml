@@ -4,10 +4,15 @@ this repository contains the full copyright notices and license terms. -->
 <form string="Listas de Precios" col="6">
     <field name="template" invisible="1"/>
     <newline/>
+    <field name="product" invisible="1"/>
+    <newline/>
     <label name="lista_precio"/>
     <field name="lista_precio"/>
     <label name="fijo"/>
     <field name="fijo"/>
     <label name="con_iva"/>
     <field name="con_iva"/>
+    <newline/>
+    <label name="precio_venta"/>
+    <field name="precio_venta"/>
 </form>

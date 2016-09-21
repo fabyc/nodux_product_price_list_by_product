@@ -8,5 +8,7 @@ this repository contains the full copyright notices and license terms. -->
         <label name="incluir_lista"/>
         <field name="incluir_lista"/>
         <newline/>
+        <label name="definir_precio_venta"/>
+        <field name="definir_precio_venta"/>
     </xpath>
 </data>

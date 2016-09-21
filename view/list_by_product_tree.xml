@@ -3,7 +3,9 @@
 this repository contains the full copyright notices and license terms. -->
 <tree string="Listas de Precios">
     <field name="template" tree_invisible="1"/>
+    <field name="product" tree_invisible="1"/>
     <field name="lista_precio"/>
     <field name="fijo"/>
-    <field name="con_iva"/>
+    <field name="con_iva" tree_invisible="1"/>
+    <field name="precio_venta" tree_invisible="1"/>
 </tree>

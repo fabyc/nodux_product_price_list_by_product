@@ -30,6 +30,10 @@ class Template:
     @fields.depends('cost_price', 'listas_precios', 'id')
     def on_change_cost_price(self):
         pool = Pool()
+        Product = pool.get('product.product')
+        products = Product.search([('template', '=', self.id)])
+        for p in products:
+            product = p
         PriceList = pool.get('product.price_list')
         User = pool.get('res.user')
         priceslist = PriceList.search([('incluir_lista', '=', True)])
@@ -51,16 +55,20 @@ class Template:
                             precio_final = user.company.currency.round(precio_final)
                     lineas.append({
                         'lista_precio': pricelist.id,
-                        'fijo' : precio_final
+                        'fijo' : precio_final,
+                        'precio_venta' : pricelist.definir_precio_venta,
                     })
-
+                    if pricelist.definir_precio_venta == True:
+                        precio_para_venta = precio_final
                 res['listas_precios'] = lineas
+                res['list_price'] = precio_para_venta
         return res
 
 class ListByProduct(ModelSQL, ModelView):
     "List By Product"
     __name__ = "product.list_by_product"
-    _order_name = 'rec_name'
+    _rec_name = 'lista_precio.name'
+
     template = fields.Many2One('product.template', 'Product Template',
         required=True, ondelete='CASCADE', select=True, states=STATES,
         depends=DEPENDS)
@@ -69,6 +77,8 @@ class ListByProduct(ModelSQL, ModelView):
         depends=DEPENDS)
     fijo = fields.Numeric('Valor fijo', digits=(16, 2))
     con_iva = fields.Boolean('Calcular precio inc. IVA')
+    precio_venta = fields.Boolean('Definir como precio de VENTA')
+    product = fields.Many2One('product.product', 'Product Template')
 
     @classmethod
     def __setup__(cls):
@@ -88,6 +98,13 @@ class ListByProduct(ModelSQL, ModelView):
             if self.template.cost_price:
                 precio_final = self.template.cost_price * (1 + percentage)
             res['fijo'] = precio_final
+        return res
+
+    @fields.depends('_parent_template.list_price', '_parent_template.id', 'fijo', 'precio_venta')
+    def on_change_precio_venta(self):
+        res= {}
+        if self.precio_venta == True:
+            res['list_price'] = self.fijo
         return res
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo', 'con_iva',
