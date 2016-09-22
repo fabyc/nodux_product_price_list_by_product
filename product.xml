@@ -29,5 +29,39 @@ this repository contains the full copyright notices and license terms. -->
           <field name="name">list_by_product_form</field>
       </record>
 
+      <!-- Update Price List by Product-->
+       <record model="ir.ui.view" id="update_price_list_start_view_form">
+          <field name="model">nodux_product_price_list_by_product.update_price.start</field>
+          <field name="type">form</field>
+          <field name="name">update_price_list_by_product_form</field>
+      </record>
+
+      <record model="ir.action.wizard" id="update_price_list_by_product">
+          <field name="name">Update prices list price</field>
+          <field name="wiz_name">nodux_product_price_list_by_product.update_price</field>
+      </record>
+
+       <record model="ir.action.keyword" id="action_update_price_list_by_product_keyword">
+          <field name="keyword">form_action</field>
+          <field name="model">product.template,-1</field>  <!-- Que vista de modelo aparece -->
+          <field name="action" ref="update_price_list_by_product"/>
+      </record>
+
+      <!-- Permisos para actualizar precio de tarifas-->
+      <record model="res.group" id="group_update_price_force">
+          <field name="name">Nodux - Actualizar precio de lista de precio</field>
+      </record>
+
+      <record model="res.user-res.group"
+          id="user_admin_group_stock_force">
+          <field name="user" ref="res.user_admin"/>
+          <field name="group" ref="group_update_price_force"/>
+      </record>
+
+      <record model="res.user-res.group"
+          id="user_trigger_group_stock_force">
+          <field name="user" ref="res.user_admin"/>
+          <field name="group" ref="group_update_price_force"/>
+      </record>
   </data>
 </tryton>

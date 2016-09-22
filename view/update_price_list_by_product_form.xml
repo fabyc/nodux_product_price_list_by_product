@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
 this repository contains the full copyright notices and license terms. -->
-<form string="¿Seguro que desea incluir lista de precio en todos los productos?">
+<form string="¿Are you sure to update prices of list price?">
   <newline/>
   <separator string="Ingrese su password" colspan="2" id="party_info"/>
   <newline/>

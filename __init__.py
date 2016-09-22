@@ -11,7 +11,9 @@ def register():
         ListByProduct,
         PriceList,
         UpdateListByProduct,
+        UpdatePriceListByProduct,
         module='nodux_product_price_list_by_product', type_='model')
     Pool.register(
         WizardListByProduct,
+        WizardPriceListByProduct,
         module='nodux_product_price_list_by_product', type_='wizard')
