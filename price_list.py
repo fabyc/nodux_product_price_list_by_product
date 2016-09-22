@@ -52,8 +52,12 @@ class PriceListLine():
             if self.percentage > 0:
                 percentage = self.percentage/100
                 p = str(percentage)
-            formula = 'unit_price * (1 + ' +p+')'
-            res['formula'] = formula
+                formula = 'unit_price * (1 + ' +p+')'
+                res['formula'] = formula
+            else:
+                res['formula'] = ""
+        else:
+            res['formula'] = ""
         return res
 
 class UpdateListByProduct(ModelView):
