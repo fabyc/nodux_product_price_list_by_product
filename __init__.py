@@ -10,6 +10,7 @@ def register():
         Template,
         ListByProduct,
         PriceList,
+        PriceListLine,
         UpdateListByProduct,
         UpdatePriceListByProduct,
         module='nodux_product_price_list_by_product', type_='model')

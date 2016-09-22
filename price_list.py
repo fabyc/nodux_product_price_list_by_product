@@ -19,7 +19,7 @@ import random
 import hashlib
 import string
 
-__all__ = ['PriceList', 'UpdateListByProduct', 'WizardListByProduct']
+__all__ = ['PriceList', 'UpdateListByProduct', 'WizardListByProduct', 'PriceListLine']
 __metaclass__ = PoolMeta
 
 class PriceList():
@@ -32,6 +32,29 @@ class PriceList():
     @classmethod
     def __setup__(cls):
         super(PriceList, cls).__setup__()
+
+class PriceListLine():
+    'Price List Line'
+    __name__ = 'product.price_list.line'
+
+    percentage = fields.Numeric('Porcentaje de descuento')
+
+    @classmethod
+    def __setup__(cls):
+        super(PriceListLine, cls).__setup__()
+        cls.formula.states['readonly'] = Eval('active', True)
+
+    @fields.depends('percentage', 'formula')
+    def on_change_percentage(self):
+        pool = Pool()
+        res= {}
+        if self.percentage:
+            if self.percentage > 0:
+                percentage = self.percentage/100
+                p = str(percentage)
+            formula = 'unit_price * (1 + ' +p+')'
+            res['formula'] = formula
+        return res
 
 class UpdateListByProduct(ModelView):
     'Update List By Product'
