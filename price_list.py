@@ -161,7 +161,8 @@ class WizardListByProduct(Wizard):
         User = pool.get('res.user')
         Product = pool.get('product.template')
         Variante = pool.get('product.product')
-
+        Taxes1 = pool.get('product.category-customer-account.tax')
+        Taxes2 = pool.get('product.template-customer-account.tax')
         ListByProduct = pool.get('product.list_by_product')
         PriceList = pool.get('product.price_list')
         priceslists = PriceList.browse(Transaction().context['active_ids'])
@@ -169,7 +170,6 @@ class WizardListByProduct(Wizard):
         user =  User(Transaction().user)
         incluido = False
         lineas = None
-        print "Listas de precios ", priceslists
 
         def in_group():
             pool = Pool()
@@ -193,7 +193,6 @@ class WizardListByProduct(Wizard):
         if not in_group():
             self.raise_user_error("No esta autorizado a agregar las listas de precio en todos los productos")
 
-
         lineas = []
 
         for pricelist in priceslists:
@@ -209,14 +208,12 @@ class WizardListByProduct(Wizard):
                     if p.listas_precios:
                         for listas in p.listas_precios:
                             if pricelist == listas.lista_precio:
-                                print "No agrega ",pricelist,listas.lista_precio
                                 incluido = True
                                 break
 
                         if incluido == True:
                             pass
                         else:
-                            print "No esta incluida , agregar : ", pricelist, p.name
                             for line in pricelist.lines:
                                 if line.percentage:
                                     if line.percentage > 0:
@@ -227,14 +224,37 @@ class WizardListByProduct(Wizard):
                                 if user.company.currency:
                                     precio_final = user.company.currency.round(precio_final)
 
+                            if p.taxes_category == True:
+                                if p.category.taxes_parent == True:
+                                    taxes1= Taxes1.search([('category','=', p.category.parent)])
+                                    taxes2 = Taxes2.search([('product','=', p)])
+                                else:
+                                    taxes1= Taxes1.search([('category','=', p.category)])
+                            else:
+                                taxes1= Taxes1.search([('category','=', p.category)])
+                                taxes2 = Taxes2.search([('product','=', p)])
+
+                            if taxes1:
+                                for t in taxes1:
+                                    iva = precio_final * t.tax.rate
+                            elif taxes2:
+                                for t in taxes2:
+                                    iva = precio_final * t.tax.rate
+                            elif taxes3:
+                                for t in taxes3:
+                                    iva = precio_final * t.tax.rate
+                            precio_total = precio_final + iva
+
                             if pricelist.definir_precio_venta == True:
                                 p.list_price = precio_final
+                                p.list_price_with_tax = precio_total
                                 p.save()
 
                             lineas.append({
                                 'template': p.id,
                                 'lista_precio': pricelist.id,
                                 'fijo' : precio_final,
+                                'fijo_con_iva': precio_total,
                                 'precio_venta': pricelist.definir_precio_venta,
                                 'product': variante.id
                             })
@@ -250,14 +270,37 @@ class WizardListByProduct(Wizard):
                             if user.company.currency:
                                 precio_final = user.company.currency.round(precio_final)
 
+                        if p.taxes_category == True:
+                            if p.category.taxes_parent == True:
+                                taxes1= Taxes1.search([('category','=', p.category.parent)])
+                                taxes2 = Taxes2.search([('product','=', p)])
+                            else:
+                                taxes1= Taxes1.search([('category','=', p.category)])
+                        else:
+                            taxes1= Taxes1.search([('category','=', p.category)])
+                            taxes2 = Taxes2.search([('product','=', p)])
+
+                        if taxes1:
+                            for t in taxes1:
+                                iva = precio_final * t.tax.rate
+                        elif taxes2:
+                            for t in taxes2:
+                                iva = precio_final * t.tax.rate
+                        elif taxes3:
+                            for t in taxes3:
+                                iva = precio_final * t.tax.rate
+                        precio_total = precio_final + iva
+
                         if pricelist.definir_precio_venta == True:
                             p.list_price = precio_final
+                            p.list_price_with_tax = precio_total
                             p.save()
 
                         lineas.append({
                             'template': p.id,
                             'lista_precio': pricelist.id,
                             'fijo' : precio_final,
+                            'fijo_con_iva': precio_total,
                             'precio_venta': pricelist.definir_precio_venta,
                             'product' : variante.id
                         })

@@ -25,6 +25,4 @@ this repository contains the full copyright notices and license terms. -->
             <newline/>
         </group>
     <newline/>
-    <label name="con_iva"/>
-    <field name="con_iva"/>
 </form>

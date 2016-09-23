@@ -7,6 +7,5 @@ this repository contains the full copyright notices and license terms. -->
     <field name="lista_precio"/>
     <field name="fijo"/>
     <field name="fijo_con_iva"/>
-    <field name="con_iva"/>
     <field name="precio_venta"/>
 </tree>
