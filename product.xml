@@ -37,7 +37,7 @@ this repository contains the full copyright notices and license terms. -->
       </record>
 
       <record model="ir.action.wizard" id="update_price_list_by_product">
-          <field name="name">Update prices list price</field>
+          <field name="name">Update prices to list price</field>
           <field name="wiz_name">nodux_product_price_list_by_product.update_price</field>
       </record>
 

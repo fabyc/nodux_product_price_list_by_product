@@ -8,11 +8,23 @@ this repository contains the full copyright notices and license terms. -->
     <newline/>
     <label name="lista_precio"/>
     <field name="lista_precio"/>
-    <label name="fijo"/>
-    <field name="fijo"/>
-    <label name="con_iva"/>
-    <field name="con_iva"/>
-    <newline/>
     <label name="precio_venta"/>
     <field name="precio_venta"/>
+    <newline/>
+    <label name="fijo"/>
+    <group id="fijo" col="4">
+        <field name="fijo" xexpand="0" xfill="0"/>
+        <label name="fijo" string="sin iva" xalign="0.0" xexpand="1" xfill="1"/>
+        <newline/>
+    </group>
+    <newline/>
+    <label name="fijo_con_iva"/>
+        <group id="fijo_con_iva" col="4">
+            <field name="fijo_con_iva" xexpand="0" xfill="0"/>
+            <label name="fijo_con_iva" string="con iva" xalign="0.0" xexpand="1" xfill="1"/>
+            <newline/>
+        </group>
+    <newline/>
+    <label name="con_iva"/>
+    <field name="con_iva"/>
 </form>

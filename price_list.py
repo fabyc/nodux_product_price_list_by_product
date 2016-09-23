@@ -26,23 +26,32 @@ class PriceList():
     'Price List'
     __name__ = 'product.price_list'
 
-    incluir_lista = fields.Boolean('Incluir lista de precio en producto')
+    incluir_lista = fields.Boolean('Incluir lista de precio en producto', states={
+        'readonly': Eval('definir_precio_venta', True)
+    })
+
     definir_precio_venta = fields.Boolean('Definir como precio de venta', help="Definir como precio de venta principal")
 
     @classmethod
     def __setup__(cls):
         super(PriceList, cls).__setup__()
 
+    @fields.depends('incluir_lista', 'definir_precio_venta')
+    def on_change_definir_precio_venta(self):
+        res = {}
+        if self.definir_precio_venta == True:
+            res['incluir_lista'] = True
+        else:
+            res['incluir_lista'] = False
+        return res
+
 class PriceListLine():
     'Price List Line'
     __name__ = 'product.price_list.line'
 
-    percentage = fields.Numeric('Porcentaje de descuento')
-
     @classmethod
     def __setup__(cls):
         super(PriceListLine, cls).__setup__()
-        cls.formula.states['readonly'] = Eval('active', True)
 
     @fields.depends('percentage', 'formula')
     def on_change_percentage(self):
@@ -160,6 +169,7 @@ class WizardListByProduct(Wizard):
         user =  User(Transaction().user)
         incluido = False
         lineas = None
+        print "Listas de precios ", priceslists
 
         def in_group():
             pool = Pool()
@@ -184,12 +194,14 @@ class WizardListByProduct(Wizard):
             self.raise_user_error("No esta autorizado a agregar las listas de precio en todos los productos")
 
 
+        lineas = []
+
         for pricelist in priceslists:
             if pricelist.incluir_lista == False:
                 pass
             elif pricelist.incluir_lista == True:
-                products = Product.search([('cost_price', '>', Decimal(0.0))])
-                lineas = []
+                products = Product.search([('id', '<', 20)])
+
                 for p in products:
                     variantes = Variante.search([('template', '=', p.id)])
                     for v in variantes:
@@ -197,11 +209,14 @@ class WizardListByProduct(Wizard):
                     if p.listas_precios:
                         for listas in p.listas_precios:
                             if pricelist == listas.lista_precio:
+                                print "No agrega ",pricelist,listas.lista_precio
                                 incluido = True
                                 break
+
                         if incluido == True:
                             pass
                         else:
+                            print "No esta incluida , agregar : ", pricelist, p.name
                             for line in pricelist.lines:
                                 if line.percentage:
                                     if line.percentage > 0:
@@ -246,6 +261,6 @@ class WizardListByProduct(Wizard):
                             'precio_venta': pricelist.definir_precio_venta,
                             'product' : variante.id
                         })
-        if lineas:
-            listas_precios = ListByProduct.create(lineas)
+        print "Agrega lineas", lineas
+        listas_precios = ListByProduct.create(lineas)
         return 'end'
