@@ -19,7 +19,8 @@ import hashlib
 import string
 from trytond.config import config
 
-__all__ = ['Template', 'ListByProduct', 'UpdatePriceListByProduct', 'WizardPriceListByProduct']
+__all__ = ['Template', 'ListByProduct', 'UpdatePriceListByProduct',
+    'WizardPriceListByProduct']
 __metaclass__ = PoolMeta
 
 STATES = {
@@ -37,6 +38,7 @@ class Template:
     @classmethod
     def __setup__(cls):
         super(Template, cls).__setup__()
+        cls.list_price_with_tax.states['readonly'] = Eval('active', True)
 
     @fields.depends('listas_precios', 'list_price', 'taxes_category', 'category',
         'list_price_with_tax', 'customer_taxes')
@@ -73,6 +75,7 @@ class ListByProduct(ModelSQL, ModelView):
     precio_venta = fields.Boolean('Definir como precio de VENTA')
     product = fields.Many2One('product.product', 'Product Template')
     fijo_con_iva = fields.Numeric('Precio con IVA', digits=(16, 6))
+
     @classmethod
     def __setup__(cls):
         super(ListByProduct, cls).__setup__()
@@ -126,9 +129,42 @@ class ListByProduct(ModelSQL, ModelView):
                     iva = precio_final * t.tax.rate
             precio_total = precio_final + iva
 
-            res['fijo'] = precio_final
-            res['fijo_con_iva'] = precio_total
+            res['fijo'] = Decimal(str(round(precio_final, 6)))
+            res['fijo_con_iva'] = Decimal(str(round(precio_total, 6)))
         return res
+
+    @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
+        '_parent_template.taxes_category', '_parent_template.category',
+        '_parent_template.id', 'fijo_con_iva')
+    def on_change_fijo_con_iva(self):
+        pool = Pool()
+        res= {}
+        precio_total = self.fijo
+        Taxes1 = pool.get('product.category-customer-account.tax')
+        Taxes2 = pool.get('product.template-customer-account.tax')
+        if self.fijo_con_iva:
+            if self.template.taxes_category == True:
+                    if self.template.category.taxes_parent == True:
+                        taxes1= Taxes1.search([('category','=', self.template.category.parent)])
+                        taxes2 = Taxes2.search([('product','=', self.template)])
+                    else:
+                        taxes1= Taxes1.search([('category','=', self.template.category)])
+            else:
+                taxes1= Taxes1.search([('category','=', self.template.category)])
+                taxes2 = Taxes2.search([('product','=', self.template)])
+
+            if taxes1:
+                for t in taxes1:
+                    iva = t.tax.rate
+            elif taxes2:
+                for t in taxes2:
+                    iva = t.tax.rate
+            elif taxes3:
+                for t in taxes3:
+                    iva = t.tax.rate
+            precio_total = self.fijo_con_iva /(1+iva)
+            res['fijo'] =  Decimal(str(round(precio_total, 6)))
+            return res
 
     @fields.depends('_parent_template.list_price', '_parent_template.id', 'fijo', 'precio_venta')
     def on_change_precio_venta(self):
@@ -229,7 +265,7 @@ class WizardPriceListByProduct(Wizard):
         User = pool.get('res.user')
         Product = pool.get('product.template')
         Variante = pool.get('product.product')
-
+        Variante = pool.get('product.product')
         products = Product.browse(Transaction().context['active_ids'])
         p = Product(Transaction().context['active_id'])
         percentage = 0
