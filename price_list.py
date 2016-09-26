@@ -45,6 +45,40 @@ class PriceList():
             res['incluir_lista'] = False
         return res
 
+    @classmethod
+    def validate(cls, price_lists):
+        for price_list in price_lists:
+            for price_list in price_lists:
+                super(PriceList, cls).validate(price_lists)
+
+    def pre_validate(self):
+        pool = Pool()
+        User = pool.get('res.user')
+        Product = pool.get('product.template')
+        Variante = pool.get('product.product')
+
+        def in_group():
+            pool = Pool()
+            ModelData = pool.get('ir.model.data')
+            User = pool.get('res.user')
+            Group = pool.get('res.group')
+            origin = str(self)
+            user = User(Transaction().user)
+
+            group = Group(ModelData.get_id('nodux_product_price_list_by_product',
+                    'group_update_price_force'))
+            transaction = Transaction()
+            user_id = transaction.user
+            if user_id == 0:
+                user_id = transaction.context.get('user', user_id)
+            if user_id == 0:
+                return True
+            user = User(user_id)
+            return origin and group in user.groups
+
+        if not in_group():
+            self.raise_user_error("No esta autorizado a cambiar la lista de precio")
+
 class PriceListLine():
     'Price List Line'
     __name__ = 'product.price_list.line'
