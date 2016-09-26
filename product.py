@@ -41,7 +41,7 @@ class Template:
         cls.list_price_with_tax.states['readonly'] = Eval('active', True)
 
     @fields.depends('listas_precios', 'list_price', 'taxes_category', 'category',
-        'list_price_with_tax', 'customer_taxes')
+        'list_price_with_tax', 'customer_taxes', 'cost_price')
     def on_change_listas_precios(self):
         changes = {
             'list_price_with_tax': self.list_price,
@@ -60,6 +60,47 @@ class Template:
         taxes = [Tax(t) for t in self.get_taxes('customer_taxes_used')]
         tax_amount = Tax.reverse_compute(list_price_with_tax, taxes)
         return tax_amount.quantize(Decimal(str(10.0 ** -DIGITS)))
+
+    @classmethod
+    def validate(cls, products):
+        for product in products:
+            for lists in product.listas_precios:
+                if lists.fijo < product.cost_price:
+                    super(Template, cls).validate(products)
+
+    def pre_validate(self):
+        pool = Pool()
+        User = pool.get('res.user')
+        Product = pool.get('product.template')
+        Variante = pool.get('product.product')
+
+        def in_group():
+            pool = Pool()
+            ModelData = pool.get('ir.model.data')
+            User = pool.get('res.user')
+            Group = pool.get('res.group')
+            origin = str(self)
+            user = User(Transaction().user)
+
+            group = Group(ModelData.get_id('nodux_product_price_list_by_product',
+                    'group_update_price_force'))
+            transaction = Transaction()
+            user_id = transaction.user
+            if user_id == 0:
+                user_id = transaction.context.get('user', user_id)
+            if user_id == 0:
+                return True
+            user = User(user_id)
+            return origin and group in user.groups
+
+        if not in_group():
+            self.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
+
+        for lists in self.listas_precios:
+            if lists.fijo < self.cost_price:
+                self.raise_user_warning('precio_costo_menor',
+                       'Precio de venta: "%s"'
+                    'es menor al precio de costo "%s".', (str(lists.fijo), str(self.cost_price)))
 
 class ListByProduct(ModelSQL, ModelView):
     "List By Product"
