@@ -77,7 +77,7 @@ class PriceList():
             return origin and group in user.groups
 
         if not in_group():
-            self.raise_user_error("No esta autorizado a cambiar la lista de precio")
+            self.raise_user_error("No esta autorizado a cambiar/crear una lista de precio")
 
 class PriceListLine():
     'Price List Line'
