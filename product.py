@@ -40,12 +40,84 @@ class Template:
         super(Template, cls).__setup__()
         cls.list_price_with_tax.states['readonly'] = Eval('active', True)
 
+    @fields.depends('cost_price', 'listas_precios', 'id', 'taxes_category',
+        'category', 'list_price_with_tax')
+    def on_change_cost_price(self):
+        pool = Pool()
+        Taxes1 = pool.get('product.category-customer-account.tax')
+        Taxes2 = pool.get('product.template-customer-account.tax')
+
+        Product = pool.get('product.product')
+        products = Product.search([('template', '=', self.id)])
+        for p in products:
+            product = p
+        PriceList = pool.get('product.price_list')
+        User = pool.get('res.user')
+        priceslist = PriceList.search([('incluir_lista', '=', True)])
+        res= {}
+        percentage = 0
+        precio_final = Decimal(0.0)
+        user =  User(Transaction().user)
+        precio_total = Decimal(0.0)
+        precio_total_iva = Decimal(0.0)
+        iva = Decimal(0.0)
+
+        if self.taxes_category == True:
+            if self.category.taxes_parent == True:
+                taxes1= Taxes1.search([('category','=', self.category.parent)])
+                taxes2 = Taxes2.search([('product','=', self.id)])
+            else:
+                taxes1= Taxes1.search([('category','=', self.category)])
+        else:
+            taxes1= Taxes1.search([('category','=', self.category)])
+            taxes2 = Taxes2.search([('product','=', self.id)])
+
+        if self.listas_precios:
+            pass
+        else:
+            if self.cost_price:
+                lineas = []
+                for pricelist in priceslist:
+                    for line in pricelist.lines:
+                        if line.percentage > 0:
+                            percentage = line.percentage/100
+                        precio_final = self.cost_price * (1 + percentage)
+                        if user.company.currency:
+                            precio_final = user.company.currency.round(precio_final)
+                    if taxes1:
+                        for t in taxes1:
+                            iva = precio_final * t.tax.rate
+                    elif taxes2:
+                        for t in taxes2:
+                            iva = precio_final * t.tax.rate
+
+                    precio_total = precio_final + iva
+
+                    lineas.append({
+                        'lista_precio': pricelist.id,
+                        'fijo' : precio_final,
+                        'fijo_con_iva':precio_total,
+                        'precio_venta' : pricelist.definir_precio_venta,
+                    })
+                    if pricelist.definir_precio_venta == True:
+                        precio_para_venta = precio_final
+                        precio_total_iva = precio_total
+                res['listas_precios'] = lineas
+                res['list_price'] = precio_para_venta
+                res['list_price_with_tax'] = precio_total_iva
+        return res
+
     @fields.depends('listas_precios', 'list_price', 'taxes_category', 'category',
         'list_price_with_tax', 'customer_taxes', 'cost_price')
     def on_change_listas_precios(self):
+        if self.list_price_with_tax:
+            price_with_tax = self.list_price_with_tax
+        else:
+            price_with_tax = Decimal(0.0)
+
         changes = {
             'list_price_with_tax': self.list_price,
-            'list_price': self.list_price_with_tax,
+            'list_price': price_with_tax,
             }
         if self.listas_precios:
             for lista in self.listas_precios:
@@ -120,10 +192,6 @@ class ListByProduct(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(ListByProduct, cls).__setup__()
-
-    @staticmethod
-    def default_fijo_con_iva():
-        return Decimal(0.0)
 
     def get_rec_name(self, lista_precio):
         return self.lista_precio.name
