@@ -165,11 +165,10 @@ class Template:
             user = User(user_id)
             return origin and group in user.groups
 
-        if not in_group():
-            self.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
-
         for lists in self.listas_precios:
             if lists.fijo < self.cost_price:
+                if not in_group():
+                    self.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
                 self.raise_user_warning('precio_costo_menor',
                        'Precio de venta: "%s"'
                     'es menor al precio de costo "%s".', (str(lists.fijo), str(self.cost_price)))
