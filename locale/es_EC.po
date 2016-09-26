@@ -1,0 +1,163 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:nodux_product_price_list_by_product.update.start,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:nodux_product_price_list_by_product.update.start,password:"
+msgid "Password"
+msgstr "Contraseña"
+
+msgctxt "field:nodux_product_price_list_by_product.update.start,user:"
+msgid "Usuario"
+msgstr ""
+
+msgctxt "field:nodux_product_price_list_by_product.update_price.start,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt ""
+"field:nodux_product_price_list_by_product.update_price.start,password:"
+msgid "Password"
+msgstr "Contraseña"
+
+msgctxt "field:nodux_product_price_list_by_product.update_price.start,user:"
+msgid "Usuario"
+msgstr ""
+
+msgctxt "field:product.list_by_product,create_date:"
+msgid "Create Date"
+msgstr "Fecha de Creación"
+
+msgctxt "field:product.list_by_product,create_uid:"
+msgid "Create User"
+msgstr "Usuario creación"
+
+msgctxt "field:product.list_by_product,fijo:"
+msgid "Precio sin IVA"
+msgstr ""
+
+msgctxt "field:product.list_by_product,fijo_con_iva:"
+msgid "Precio con IVA"
+msgstr ""
+
+msgctxt "field:product.list_by_product,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:product.list_by_product,lista_precio:"
+msgid "Lista de Precio"
+msgstr ""
+
+msgctxt "field:product.list_by_product,precio_venta:"
+msgid "Definir como precio de VENTA"
+msgstr ""
+
+msgctxt "field:product.list_by_product,product:"
+msgid "Product Template"
+msgstr "Plantilla de producto"
+
+msgctxt "field:product.list_by_product,rec_name:"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "field:product.list_by_product,template:"
+msgid "Product Template"
+msgstr "Plantilla de producto"
+
+msgctxt "field:product.list_by_product,write_date:"
+msgid "Write Date"
+msgstr "Modificado por usuario"
+
+msgctxt "field:product.list_by_product,write_uid:"
+msgid "Write User"
+msgstr "Usuario modificación"
+
+msgctxt "field:product.price_list,definir_precio_venta:"
+msgid "Definir como precio de venta"
+msgstr ""
+
+msgctxt "field:product.price_list,incluir_lista:"
+msgid "Incluir lista de precio en producto"
+msgstr ""
+
+msgctxt "field:product.template,listas_precios:"
+msgid "Listas de precio"
+msgstr ""
+
+msgctxt "help:product.price_list,definir_precio_venta:"
+msgid "Definir como precio de venta principal"
+msgstr ""
+
+msgctxt "model:ir.action,name:update_price_list"
+msgid "Incluir lista de precio en productos"
+msgstr ""
+
+msgctxt "model:ir.action,name:update_price_list_by_product"
+msgid "Update prices list price"
+msgstr "Actualizar precio de las listas de precio"
+
+msgctxt "model:nodux_product_price_list_by_product.update.start,name:"
+msgid "Update List By Product"
+msgstr "Actualizar lista de precio por Producto"
+
+msgctxt "model:nodux_product_price_list_by_product.update_price.start,name:"
+msgid "Update Price List By Product"
+msgstr "Actualizar lista de Precio por Producto"
+
+msgctxt "model:product.list_by_product,name:"
+msgid "List By Product"
+msgstr ""
+
+msgctxt "model:res.group,name:group_update_price_force"
+msgid "Nodux - Actualizar precio de lista de precio"
+msgstr ""
+
+msgctxt "view:nodux_product_price_list_by_product.update.start:"
+msgid "Ingrese su password"
+msgstr "Ingrese su contraseña"
+
+msgctxt "view:nodux_product_price_list_by_product.update.start:"
+msgid "¿Seguro que desea incluir lista de precio en todos los productos?"
+msgstr ""
+
+msgctxt "view:nodux_product_price_list_by_product.update_price.start:"
+msgid "Ingrese su password"
+msgstr "Ingrese su contraseña"
+
+msgctxt "view:nodux_product_price_list_by_product.update_price.start:"
+msgid "¿Are you sure to update prices of list price?"
+msgstr "¿Está seguro de actualizar el precio de las listas de precio?"
+
+msgctxt "view:product.list_by_product:"
+msgid "Listas de Precios"
+msgstr ""
+
+msgctxt "view:product.list_by_product:"
+msgid "con iva"
+msgstr ""
+
+msgctxt "view:product.list_by_product:"
+msgid "sin iva"
+msgstr ""
+
+msgctxt ""
+"wizard_button:nodux_product_price_list_by_product.update,start,accept:"
+msgid "Ok"
+msgstr "Aceptar"
+
+msgctxt "wizard_button:nodux_product_price_list_by_product.update,start,end:"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt ""
+"wizard_button:nodux_product_price_list_by_product.update_price,start,accept:"
+msgid "Ok"
+msgstr "Aceptar"
+
+msgctxt ""
+"wizard_button:nodux_product_price_list_by_product.update_price,start,end:"
+msgid "Cancel"
+msgstr "Cancelar"

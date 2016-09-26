@@ -1,6 +1,8 @@
+#! -*- coding: utf8 -*-
+
 #This file is part of Tryton.  The COPYRIGHT file at the top level of
 #this repository contains the full copyright notices and license terms.
-#! -*- coding: utf8 -*-
+
 from trytond.pool import *
 from trytond.report import Report
 from trytond.transaction import Transaction
@@ -176,7 +178,7 @@ class UpdateListByProduct(ModelView):
                         res['user'] = u.name
                         break
                 if value == False:
-                    self.raise_user_error(u'Invalid password')
+                    self.raise_user_error(u'Contraseña no valida')
         return res
 
 class WizardListByProduct(Wizard):
