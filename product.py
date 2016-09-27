@@ -275,9 +275,6 @@ class ListByProduct(ModelSQL, ModelView):
             elif taxes2:
                 for t in taxes2:
                     iva = t.tax.rate
-            elif taxes3:
-                for t in taxes3:
-                    iva = t.tax.rate
 
             precio_total = self.fijo_con_iva /(1+iva)
             res['fijo'] =  Decimal(str(round(precio_total, 6)))
