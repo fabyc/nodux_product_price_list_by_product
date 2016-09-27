@@ -1,6 +1,8 @@
+#! -*- coding: utf8 -*-
+
 #This file is part of Tryton.  The COPYRIGHT file at the top level of
 #this repository contains the full copyright notices and license terms.
-#! -*- coding: utf8 -*-
+
 from trytond.pool import *
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
@@ -39,6 +41,11 @@ class Template:
     def __setup__(cls):
         super(Template, cls).__setup__()
         cls.list_price_with_tax.states['readonly'] = Eval('active', True)
+
+    @fields.depends('name')
+    def on_change_name(self):
+        if self.name:
+            self.raise_user_error(u'No olvide configurar: \n-Categoria\n-Impuestos(Pestaña Contabilidad)')
 
     @fields.depends('cost_price', 'listas_precios', 'id', 'taxes_category',
         'category', 'list_price_with_tax')
@@ -250,6 +257,7 @@ class ListByProduct(ModelSQL, ModelView):
         precio_total = self.fijo
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
+        iva = Decimal(0.0)
         if self.fijo_con_iva:
             if self.template.taxes_category == True:
                     if self.template.category.taxes_parent == True:
@@ -270,6 +278,7 @@ class ListByProduct(ModelSQL, ModelView):
             elif taxes3:
                 for t in taxes3:
                     iva = t.tax.rate
+
             precio_total = self.fijo_con_iva /(1+iva)
             res['fijo'] =  Decimal(str(round(precio_total, 6)))
             return res
