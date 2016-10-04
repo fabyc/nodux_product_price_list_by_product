@@ -15,6 +15,13 @@ this repository contains the full copyright notices and license terms. -->
           <field name="name">price_list_tree</field>
       </record>
 
+      <!-- Price List Lines -->
+      <record model="ir.ui.view" id="price_list_line_view_form">
+          <field name="model">product.price_list.line</field>
+          <field name="inherit" ref="product_price_list.price_list_line_view_form"/>
+          <field name="name">price_list_line_form</field>
+      </record>
+
       <!-- Update Price List-->
        <record model="ir.ui.view" id="update_list_start_view_form">
           <field name="model">nodux_product_price_list_by_product.update.start</field>

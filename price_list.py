@@ -85,9 +85,16 @@ class PriceListLine():
     'Price List Line'
     __name__ = 'product.price_list.line'
 
+    new_formula = fields.Char('Formula', readonly = True)
+    use_new_formula = fields.Boolean('Utilizar formula')
+
     @classmethod
     def __setup__(cls):
         super(PriceListLine, cls).__setup__()
+
+    @staticmethod
+    def default_new_formula():
+        return 'costo/(1-%)'
 
     @fields.depends('percentage', 'formula')
     def on_change_percentage(self):
@@ -103,6 +110,24 @@ class PriceListLine():
                 res['formula'] = ""
         else:
             res['formula'] = ""
+        return res
+
+    @fields.depends('percentage', 'formula', 'new_formula', 'use_new_formula')
+    def on_change_use_new_formula(self):
+        pool = Pool()
+        res= {}
+        p = '0'
+        if self.percentage > 0:
+            percentage = self.percentage/100
+            p = str(percentage)
+        if self.use_new_formula:
+            if self.use_new_formula == True:
+                    formula = 'product.cost_price / (1 - ' +p+')'
+                    res['formula'] = formula
+            else:
+                res['formula'] = 'product.cost_price * (1 + ' +p+')'
+        else:
+            res['formula'] = 'product.cost_price * (1 + ' +p+')'
         return res
 
 class UpdateListByProduct(ModelView):
@@ -254,7 +279,10 @@ class WizardListByProduct(Wizard):
                                 if line.percentage:
                                     if line.percentage > 0:
                                         percentage = line.percentage/100
-                                    precio_final = p.cost_price * (1 + percentage)
+                                    if line.use_new_formula == True:
+                                        precio_final = p.cost_price / (1 - percentage)
+                                    else:
+                                        precio_final = p.cost_price * (1 + percentage)
                                 else:
                                     self.raise_user_error('No ha definido el porcentaje, modifique la lista de precio')
                                 if user.company.currency:
@@ -300,7 +328,10 @@ class WizardListByProduct(Wizard):
                             if line.percentage:
                                 if line.percentage > 0:
                                     percentage = line.percentage/100
-                                precio_final = p.cost_price * (1 + percentage)
+                                if line.use_new_formula == True:
+                                    precio_final = p.cost_price / (1 - percentage)
+                                else:
+                                    precio_final = p.cost_price * (1 + percentage)
                             else:
                                 self.raise_user_error('Debe asignar el porcentaje de ganancia en la lista de precio')
                             if user.company.currency:
@@ -340,6 +371,5 @@ class WizardListByProduct(Wizard):
                             'precio_venta': pricelist.definir_precio_venta,
                             'product' : variante.id
                         })
-        print "Agrega lineas", lineas
         listas_precios = ListByProduct.create(lineas)
         return 'end'

@@ -88,7 +88,10 @@ class Template:
                     for line in pricelist.lines:
                         if line.percentage > 0:
                             percentage = line.percentage/100
-                        precio_final = self.cost_price * (1 + percentage)
+                        if line.use_new_formula == True:
+                            precio_final = self.cost_price / (1 - percentage)
+                        else:
+                            precio_final = self.cost_price * (1 + percentage)
                         if user.company.currency:
                             precio_final = user.company.currency.round(precio_final)
                     if taxes1:
@@ -216,13 +219,22 @@ class ListByProduct(ModelSQL, ModelView):
         precio_final = Decimal(0.0)
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
+        use_new_formula = False
         if self.lista_precio:
             if self.lista_precio.lines:
                 for line in self.lista_precio.lines:
                     if line.percentage > 0:
                         percentage = line.percentage/100
+                    if line.use_new_formula == True:
+                        use_new_formula = True
+                    else:
+                        use_new_formula = False
+
             if self.template.cost_price:
-                precio_final = self.template.cost_price * (1 + percentage)
+                if use_new_formula == True:
+                    precio_final = self.template.cost_price / (1 - percentage)
+                else:
+                    precio_final = self.template.cost_price * (1 + percentage)
             if self.template.taxes_category == True:
                 if self.template.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', self.template.category.parent)])
@@ -385,7 +397,7 @@ class WizardPriceListByProduct(Wizard):
         percentage = 0
         precio_final = Decimal(0.0)
         new_list_price = Decimal(0.0)
-
+        use_new_formula = False
         def in_group():
             pool = Pool()
             ModelData = pool.get('ir.model.data')
@@ -413,13 +425,21 @@ class WizardPriceListByProduct(Wizard):
                 for listas in product.listas_precios:
                     if listas.lista_precio.lines:
                         for line in listas.lista_precio.lines:
+                            if line.use_new_formula == True:
+                                use_new_formula = True
+                            else:
+                                use_new_formula = False
+
                             if line.percentage:
                                 if line.percentage > 0:
                                     percentage = line.percentage/100
                             else:
                                 self.raise_user_error('No ha definido el porcentaje de ganancia en las listas de precio')
                     if product.cost_price:
-                        precio_final = product.cost_price * (1+percentage)
+                        if use_new_formula == True:
+                            precio_final = product.cost_price / (1 - percentage)
+                        else:
+                            precio_final = product.cost_price * (1 + percentage)
 
                     if listas.precio_venta == True:
                         new_list_price = precio_final
