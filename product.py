@@ -292,6 +292,40 @@ class ListByProduct(ModelSQL, ModelView):
             res['fijo'] =  Decimal(str(round(precio_total, 6)))
             return res
 
+
+    @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
+        '_parent_template.taxes_category', '_parent_template.category',
+        '_parent_template.id', 'fijo_con_iva')
+    def on_change_fijo(self):
+        pool = Pool()
+        res={}
+        precio_total_iva = self.fijo_con_iva
+        Taxes1 = pool.get('product.category-customer-account.tax')
+        Taxes2 = pool.get('product.template-customer-account.tax')
+        iva = Decimal(0.0)
+
+        if self.fijo_iva:
+            if self.template.taxes_category == True:
+                if self.template.category.taxes_parent == True:
+                    taxes1 = Taxes1.search([('category','=', self.template.category.parent)])
+                    taxes2 = Taxes2.search([('product', '=', self.template)])
+                else:
+                    taxes1 = Taxes1.search([('category', '=', self.template.category)])
+            else:
+                taxes1 = Taxes1.search([('category', '=', self.template.category)])
+                taxes2 = Taxes2.search([('product', '=', self.template)])
+
+            if taxes1:
+                for t in taxes1:
+                    iva = t.tax.rate
+            elif taxes2:
+                for t in taxes2:
+                    iva = t.tax.rate
+
+            precio_total_con_iva = self.fijo*(1+iva)
+            res['fijo_con_iva'] = Decimal(str(round(precio_total_con_iva, 6)))
+            return res
+
     @fields.depends('_parent_template.list_price', '_parent_template.id', 'fijo', 'precio_venta')
     def on_change_precio_venta(self):
         res= {}
