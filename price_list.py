@@ -29,10 +29,12 @@ class PriceList():
     __name__ = 'product.price_list'
 
     incluir_lista = fields.Boolean('Incluir lista de precio en producto', states={
-        'readonly': Eval('definir_precio_venta', True)
+        'readonly': (Eval('definir_precio_venta', True)) | (Eval('definir_precio_tarjeta', True))
     })
 
     definir_precio_venta = fields.Boolean('Definir como precio de venta', help="Definir como precio de venta principal")
+
+    definir_precio_tarjeta = fields.Boolean('Precio tarjeta de credito', help="Definir como precio de tarjeta de credito")
 
     @classmethod
     def __setup__(cls):
@@ -44,7 +46,22 @@ class PriceList():
         if self.definir_precio_venta == True:
             res['incluir_lista'] = True
         else:
-            res['incluir_lista'] = False
+            if self.incluir_lista:
+                res['incluir_lista'] = self.incluir_lista
+            else:
+                res['incluir_lista'] = False
+        return res
+
+    @fields.depends('incluir_lista', 'definir_precio_tarjeta')
+    def on_change_definir_precio_tarjeta(self):
+        res = {}
+        if self.definir_precio_tarjeta == True:
+            res['incluir_lista'] = True
+        else:
+            if self.incluir_lista:
+                res['incluir_lista'] = self.incluir_lista
+            else:
+                res['incluir_lista'] = False
         return res
 
     @classmethod
@@ -96,7 +113,7 @@ class PriceListLine():
     def default_new_formula():
         return 'costo/(1-%)'
 
-    @fields.depends('percentage', 'formula')
+    @fields.depends('percentage', 'formula', '_parent_price_list.definir_precio_tarjeta')
     def on_change_percentage(self):
         pool = Pool()
         res= {}
@@ -104,7 +121,10 @@ class PriceListLine():
             if self.percentage > 0:
                 percentage = self.percentage/100
                 p = str(percentage)
-                formula = 'product.cost_price * (1 + ' +p+')'
+                if self.price_list.definir_precio_tarjeta == True:
+                    formula = 'product.list_price * (1 + ' +p+')'
+                else:
+                    formula = 'product.cost_price * (1 + ' +p+')'
                 res['formula'] = formula
             else:
                 res['formula'] = ""
@@ -112,7 +132,8 @@ class PriceListLine():
             res['formula'] = ""
         return res
 
-    @fields.depends('percentage', 'formula', 'new_formula', 'use_new_formula')
+    @fields.depends('percentage', 'formula', 'new_formula', 'use_new_formula',
+        '_parent_price_list.definir_precio_tarjeta')
     def on_change_use_new_formula(self):
         pool = Pool()
         res= {}
@@ -122,12 +143,23 @@ class PriceListLine():
             p = str(percentage)
         if self.use_new_formula:
             if self.use_new_formula == True:
+                if self.price_list.definir_precio_tarjeta == True:
+                    formula = 'product.list_price / (1 - ' +p+')'
+                else:
                     formula = 'product.cost_price / (1 - ' +p+')'
-                    res['formula'] = formula
+                res['formula'] = formula
             else:
-                res['formula'] = 'product.cost_price * (1 + ' +p+')'
+                if self.price_list.definir_precio_tarjeta == True:
+                    formula = 'product.list_price * (1 + ' +p+')'
+                else:
+                    formula = 'product.cost_price * (1 +' +p+')'
+                res['formula'] = formula
         else:
-            res['formula'] = 'product.cost_price * (1 + ' +p+')'
+            if self.price_list.definir_precio_tarjeta == True:
+                formula = 'product.list_price * (1 + '+p+')'
+            else:
+                formula = 'product.cost_price * (1 +' +p+')'
+            res['formula'] = formula
         return res
 
 class UpdateListByProduct(ModelView):
@@ -260,7 +292,7 @@ class WizardListByProduct(Wizard):
             if pricelist.incluir_lista == False:
                 pass
             elif pricelist.incluir_lista == True:
-                products = Product.search([('id', '<', 20)])
+                products = Product.search([('id', '>', 0)])
 
                 for p in products:
                     variantes = Variante.search([('template', '=', p.id)])
@@ -280,9 +312,15 @@ class WizardListByProduct(Wizard):
                                     if line.percentage > 0:
                                         percentage = line.percentage/100
                                     if line.use_new_formula == True:
-                                        precio_final = p.cost_price / (1 - percentage)
+                                        if line.price_list.definir_precio_tarjeta == True:
+                                            precio_final = p.list_price / (1 - percentage)
+                                        else:
+                                            precio_final = p.cost_price / (1 - percentage)
                                     else:
-                                        precio_final = p.cost_price * (1 + percentage)
+                                        if line.price_list.definir_precio_tarjeta == True:
+                                            precio_final = p.list_price * (1 + percentage)
+                                        else:
+                                            precio_final = p.cost_price * (1 + percentage)
                                 else:
                                     self.raise_user_error('No ha definido el porcentaje, modifique la lista de precio')
                                 if user.company.currency:
@@ -304,9 +342,7 @@ class WizardListByProduct(Wizard):
                             elif taxes2:
                                 for t in taxes2:
                                     iva = precio_final * t.tax.rate
-                            elif taxes3:
-                                for t in taxes3:
-                                    iva = precio_final * t.tax.rate
+
                             precio_total = precio_final + iva
 
                             if pricelist.definir_precio_venta == True:
@@ -329,9 +365,15 @@ class WizardListByProduct(Wizard):
                                 if line.percentage > 0:
                                     percentage = line.percentage/100
                                 if line.use_new_formula == True:
-                                    precio_final = p.cost_price / (1 - percentage)
+                                    if line.price_list.definir_precio_tarjeta == True:
+                                        precio_final = p.list_price / (1 - percentage)
+                                    else:
+                                        precio_final = p.cost_price / (1 - percentage)
                                 else:
-                                    precio_final = p.cost_price * (1 + percentage)
+                                    if line.price_list.definir_precio_tarjeta == True:
+                                        precio_final = p.list_price * (1 + percentage)
+                                    else:
+                                        precio_final = p.cost_price * (1 + percentage)
                             else:
                                 self.raise_user_error('Debe asignar el porcentaje de ganancia en la lista de precio')
                             if user.company.currency:
@@ -353,9 +395,7 @@ class WizardListByProduct(Wizard):
                         elif taxes2:
                             for t in taxes2:
                                 iva = precio_final * t.tax.rate
-                        elif taxes3:
-                            for t in taxes3:
-                                iva = precio_final * t.tax.rate
+
                         precio_total = precio_final + iva
 
                         if pricelist.definir_precio_venta == True:

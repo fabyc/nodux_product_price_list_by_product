@@ -10,5 +10,7 @@ this repository contains the full copyright notices and license terms. -->
         <newline/>
         <label name="definir_precio_venta"/>
         <field name="definir_precio_venta"/>
+        <label name="definir_precio_tarjeta"/>
+        <field name="definir_precio_tarjeta"/>
     </xpath>
 </data>

@@ -48,7 +48,7 @@ class Template:
             self.raise_user_error(u'No olvide configurar: \n-Categoria\n-Impuestos(Pestaña Contabilidad)')
 
     @fields.depends('cost_price', 'listas_precios', 'id', 'taxes_category',
-        'category', 'list_price_with_tax')
+        'category', 'list_price_with_tax', 'list_price')
     def on_change_cost_price(self):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
@@ -68,6 +68,7 @@ class Template:
         precio_total = Decimal(0.0)
         precio_total_iva = Decimal(0.0)
         iva = Decimal(0.0)
+        precio_para_venta = Decimal(0.0)
 
         if self.taxes_category == True:
             if self.category.taxes_parent == True:
@@ -89,9 +90,16 @@ class Template:
                         if line.percentage > 0:
                             percentage = line.percentage/100
                         if line.use_new_formula == True:
-                            precio_final = self.cost_price / (1 - percentage)
+                            if pricelist.definir_precio_tarjeta == True:
+                                precio_final = precio_para_venta / (1 - percentage)
+                            else:
+                                precio_final = self.cost_price / (1 - percentage)
                         else:
-                            precio_final = self.cost_price * (1 + percentage)
+                            if pricelist.definir_precio_tarjeta == True:
+                                precio_final = precio_para_venta * (1 + percentage)
+                            else:
+                                precio_final = self.cost_price * (1 + percentage)
+
                         if user.company.currency:
                             precio_final = user.company.currency.round(precio_final)
                     if taxes1:
@@ -211,7 +219,7 @@ class ListByProduct(ModelSQL, ModelView):
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
         '_parent_template.taxes_category', '_parent_template.category',
-        '_parent_template.id')
+        '_parent_template.id', 'parent_template.list_price')
     def on_change_lista_precio(self):
         pool = Pool()
         res= {}
@@ -232,9 +240,15 @@ class ListByProduct(ModelSQL, ModelView):
 
             if self.template.cost_price:
                 if use_new_formula == True:
-                    precio_final = self.template.cost_price / (1 - percentage)
+                    if self.lista_precio.definir_precio_tarjeta == True:
+                        precio_final = self.template.list_price / (1 - percentage)
+                    else:
+                        precio_final = self.template.cost_price / (1 - percentage)
                 else:
-                    precio_final = self.template.cost_price * (1 + percentage)
+                    if self.lista_precio.definir_precio_tarjeta == True:
+                        precio_final = self.template.list_price * (1 + percentage)
+                    else:
+                        precio_final = self.template.cost_price * (1 + percentage)
             if self.template.taxes_category == True:
                 if self.template.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', self.template.category.parent)])
@@ -262,7 +276,7 @@ class ListByProduct(ModelSQL, ModelView):
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
         '_parent_template.taxes_category', '_parent_template.category',
-        '_parent_template.id', 'fijo_con_iva')
+        '_parent_template.id', 'fijo_con_iva', '_parent_template.list_price')
     def on_change_fijo_con_iva(self):
         pool = Pool()
         res= {}
@@ -295,7 +309,7 @@ class ListByProduct(ModelSQL, ModelView):
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
         '_parent_template.taxes_category', '_parent_template.category',
-        '_parent_template.id', 'fijo_con_iva')
+        '_parent_template.id', 'fijo_con_iva', '_parent_template.list_price')
     def on_change_fijo(self):
         pool = Pool()
         res={}
@@ -471,9 +485,16 @@ class WizardPriceListByProduct(Wizard):
                                 self.raise_user_error('No ha definido el porcentaje de ganancia en las listas de precio')
                     if product.cost_price:
                         if use_new_formula == True:
-                            precio_final = product.cost_price / (1 - percentage)
+                            if listas.definir_precio_tarjeta == True:
+                                precio_final = product.list_price / (1 - percentage)
+
+                            else:
+                                precio_final = product.cost_price / (1 - percentage)
                         else:
-                            precio_final = product.cost_price * (1 + percentage)
+                            if listas.definir_precio_tarjeta  == True:
+                                precio_final = product.list_price * (1 + percentage)
+                            else:
+                                precio_final = product.cost_price * (1 + percentage)
 
                     if listas.precio_venta == True:
                         new_list_price = precio_final

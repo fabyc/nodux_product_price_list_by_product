@@ -7,5 +7,6 @@ this repository contains the full copyright notices and license terms. -->
         position="after">
         <field name="incluir_lista"/>
         <field name="definir_precio_venta"/>
+        <field name="definir_precio_tarjeta"/>
     </xpath>
 </data>
