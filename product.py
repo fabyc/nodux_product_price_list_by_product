@@ -42,6 +42,7 @@ class Template:
         super(Template, cls).__setup__()
         cls.list_price_with_tax.states['readonly'] = Eval('active', True)
 
+
     @fields.depends('name')
     def on_change_name(self):
         if self.name:
@@ -154,42 +155,40 @@ class Template:
     @classmethod
     def validate(cls, products):
         for product in products:
+            name_list = []
             for lists in product.listas_precios:
+                if lists.lista_precio.name in name_list:
+                    product.raise_user_error('%s se encuentra duplicada', lists.lista_precio.name)
+                else:
+                    name_list.append(lists.lista_precio.name)
+
                 if lists.fijo < product.cost_price:
+                    def in_group():
+                        pool = Pool()
+                        ModelData = pool.get('ir.model.data')
+                        User = pool.get('res.user')
+                        Group = pool.get('res.group')
+                        origin = str(cls)
+                        user = User(Transaction().user)
+
+                        group = Group(ModelData.get_id('nodux_product_price_list_by_product',
+                                'group_update_price_force'))
+                        transaction = Transaction()
+                        user_id = transaction.user
+                        if user_id == 0:
+                            user_id = transaction.context.get('user', user_id)
+                        if user_id == 0:
+                            return True
+                        user = User(user_id)
+                        return origin and group in user.groups
+
+                    if not in_group():
+                        product.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
+                    else:
+                        product.raise_user_error('Precio de venta: "%s"'
+                            'es menor al precio de costo "%s".', (str(lists.fijo), str(product.cost_price)))
+
                     super(Template, cls).validate(products)
-
-    def pre_validate(self):
-        pool = Pool()
-        User = pool.get('res.user')
-        Product = pool.get('product.template')
-        Variante = pool.get('product.product')
-
-        def in_group():
-            pool = Pool()
-            ModelData = pool.get('ir.model.data')
-            User = pool.get('res.user')
-            Group = pool.get('res.group')
-            origin = str(self)
-            user = User(Transaction().user)
-
-            group = Group(ModelData.get_id('nodux_product_price_list_by_product',
-                    'group_update_price_force'))
-            transaction = Transaction()
-            user_id = transaction.user
-            if user_id == 0:
-                user_id = transaction.context.get('user', user_id)
-            if user_id == 0:
-                return True
-            user = User(user_id)
-            return origin and group in user.groups
-
-        for lists in self.listas_precios:
-            if lists.fijo < self.cost_price:
-                if not in_group():
-                    self.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
-                self.raise_user_warning('precio_costo_menor',
-                       'Precio de venta: "%s"'
-                    'es menor al precio de costo "%s".', (str(lists.fijo), str(self.cost_price)))
 
 class ListByProduct(ModelSQL, ModelView):
     "List By Product"
@@ -318,7 +317,7 @@ class ListByProduct(ModelSQL, ModelView):
         Taxes2 = pool.get('product.template-customer-account.tax')
         iva = Decimal(0.0)
 
-        if self.fijo_iva:
+        if self.fijo_con_iva:
             if self.template.taxes_category == True:
                 if self.template.category.taxes_parent == True:
                     taxes1 = Taxes1.search([('category','=', self.template.category.parent)])
@@ -339,6 +338,7 @@ class ListByProduct(ModelSQL, ModelView):
             precio_total_con_iva = self.fijo*(1+iva)
             res['fijo_con_iva'] = Decimal(str(round(precio_total_con_iva, 6)))
             return res
+
 
     @fields.depends('_parent_template.list_price', '_parent_template.id', 'fijo', 'precio_venta')
     def on_change_precio_venta(self):
