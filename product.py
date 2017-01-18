@@ -185,7 +185,7 @@ class Template:
                     if not in_group():
                         product.raise_user_error("No esta autorizado a actualizar el precio de la lista de precio")
                     else:
-                        product.raise_user_error('Precio de venta: "%s"'
+                        product.raise_user_warning('precio_costo_menor','Precio de venta: "%s"'
                             'es menor al precio de costo "%s".', (str(lists.fijo), str(product.cost_price)))
 
                     super(Template, cls).validate(products)
