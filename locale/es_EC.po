@@ -87,7 +87,6 @@ msgctxt "field:product.price_list,incluir_lista:"
 msgid "Incluir lista de precio en producto"
 msgstr ""
 
-#, fuzzy
 msgctxt "field:product.price_list.line,new_formula:"
 msgid "Formula"
 msgstr "Fórmula"
@@ -112,7 +111,6 @@ msgctxt "model:ir.action,name:update_price_list"
 msgid "Incluir lista de precio en productos"
 msgstr ""
 
-#, fuzzy
 msgctxt "model:ir.action,name:update_price_list_by_product"
 msgid "Update prices to list price"
 msgstr "Actualizar precio de las listas de precio"
