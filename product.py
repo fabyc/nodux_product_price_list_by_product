@@ -190,6 +190,7 @@ class Template:
 
                     super(Template, cls).validate(products)
 
+
 class ListByProduct(ModelSQL, ModelView):
     "List By Product"
     __name__ = "product.list_by_product"
@@ -218,7 +219,7 @@ class ListByProduct(ModelSQL, ModelView):
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
         '_parent_template.taxes_category', '_parent_template.category',
-        '_parent_template.id', 'parent_template.list_price')
+        '_parent_template.id', '_parent_template.list_price')
     def on_change_lista_precio(self):
         pool = Pool()
         res= {}
@@ -227,6 +228,7 @@ class ListByProduct(ModelSQL, ModelView):
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
         use_new_formula = False
+
         if self.lista_precio:
             if self.lista_precio.lines:
                 for line in self.lista_precio.lines:
@@ -245,7 +247,7 @@ class ListByProduct(ModelSQL, ModelView):
                         precio_final = self.template.cost_price / (1 - percentage)
                 else:
                     if self.lista_precio.definir_precio_tarjeta == True:
-                        precio_final = self.template.list_price * (1 + percentage)
+                        precio_final = self.template.cost_price * (1 + percentage)
                     else:
                         precio_final = self.template.cost_price * (1 + percentage)
             if self.template.taxes_category == True:
