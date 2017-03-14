@@ -1,8 +1,5 @@
 #! -*- coding: utf8 -*-
 
-#This file is part of Tryton.  The COPYRIGHT file at the top level of
-#this repository contains the full copyright notices and license terms.
-
 from trytond.pool import *
 from trytond.report import Report
 from trytond.transaction import Transaction
@@ -42,27 +39,23 @@ class PriceList():
 
     @fields.depends('incluir_lista', 'definir_precio_venta')
     def on_change_definir_precio_venta(self):
-        res = {}
         if self.definir_precio_venta == True:
-            res['incluir_lista'] = True
+            self.incluir_lista = True
         else:
             if self.incluir_lista:
-                res['incluir_lista'] = self.incluir_lista
+                self.incluir_lista = self.incluir_lista
             else:
-                res['incluir_lista'] = False
-        return res
+                self.incluir_lista = False
 
     @fields.depends('incluir_lista', 'definir_precio_tarjeta')
     def on_change_definir_precio_tarjeta(self):
-        res = {}
         if self.definir_precio_tarjeta == True:
-            res['incluir_lista'] = True
+            self.incluir_lista = True
         else:
             if self.incluir_lista:
-                res['incluir_lista'] = self.incluir_lista
+                self.incluir_lista = self.incluir_lista
             else:
-                res['incluir_lista'] = False
-        return res
+                self.incluir_lista = False
 
     @classmethod
     def validate(cls, price_lists):
@@ -116,7 +109,6 @@ class PriceListLine():
     @fields.depends('percentage', 'formula', '_parent_price_list.definir_precio_tarjeta')
     def on_change_percentage(self):
         pool = Pool()
-        res= {}
         if self.percentage:
             if self.percentage > 0:
                 percentage = self.percentage/100
@@ -125,18 +117,16 @@ class PriceListLine():
                     formula = 'product.list_price * (1 + ' +p+')'
                 else:
                     formula = 'product.cost_price * (1 + ' +p+')'
-                res['formula'] = formula
+                self.formula = formula
             else:
-                res['formula'] = ""
+                self.formula = ""
         else:
-            res['formula'] = ""
-        return res
+            self.formula = ""
 
     @fields.depends('percentage', 'formula', 'new_formula', 'use_new_formula',
         '_parent_price_list.definir_precio_tarjeta')
     def on_change_use_new_formula(self):
         pool = Pool()
-        res= {}
         p = '0'
         if self.percentage > 0:
             percentage = self.percentage/100
@@ -147,20 +137,19 @@ class PriceListLine():
                     formula = 'product.list_price / (1 - ' +p+')'
                 else:
                     formula = 'product.cost_price / (1 - ' +p+')'
-                res['formula'] = formula
+                self.formula = formula
             else:
                 if self.price_list.definir_precio_tarjeta == True:
                     formula = 'product.list_price * (1 + ' +p+')'
                 else:
                     formula = 'product.cost_price * (1 +' +p+')'
-                res['formula'] = formula
+                self.formula = formula
         else:
             if self.price_list.definir_precio_tarjeta == True:
                 formula = 'product.list_price * (1 + '+p+')'
             else:
                 formula = 'product.cost_price * (1 +' +p+')'
-            res['formula'] = formula
-        return res
+            self.formula = formula
 
 class UpdateListByProduct(ModelView):
     'Update List By Product'
@@ -222,7 +211,6 @@ class UpdateListByProduct(ModelView):
 
     @fields.depends('password')
     def on_change_password(self):
-        res = {}
         User = Pool().get('res.user')
         user = None
         value = False
@@ -232,11 +220,10 @@ class UpdateListByProduct(ModelView):
                 for u in users:
                     value = self.check_password(self.password, u.password_hash)
                     if value == True:
-                        res['user'] = u.name
+                        self.user = u.name
                         break
                 if value == False:
                     self.raise_user_error(u'Contraseña no valida')
-        return res
 
 class WizardListByProduct(Wizard):
     'Wizard List By Product'

@@ -75,6 +75,10 @@ msgctxt "field:product.list_by_product,write_uid:"
 msgid "Write User"
 msgstr "Usuario modificación"
 
+msgctxt "field:product.price_list,definir_precio_tarjeta:"
+msgid "Precio tarjeta de credito"
+msgstr ""
+
 msgctxt "field:product.price_list,definir_precio_venta:"
 msgid "Definir como precio de venta"
 msgstr ""
@@ -83,8 +87,20 @@ msgctxt "field:product.price_list,incluir_lista:"
 msgid "Incluir lista de precio en producto"
 msgstr ""
 
+msgctxt "field:product.price_list.line,new_formula:"
+msgid "Formula"
+msgstr "Fórmula"
+
+msgctxt "field:product.price_list.line,use_new_formula:"
+msgid "Utilizar formula"
+msgstr ""
+
 msgctxt "field:product.template,listas_precios:"
 msgid "Listas de precio"
+msgstr ""
+
+msgctxt "help:product.price_list,definir_precio_tarjeta:"
+msgid "Definir como precio de tarjeta de credito"
 msgstr ""
 
 msgctxt "help:product.price_list,definir_precio_venta:"
@@ -96,7 +112,7 @@ msgid "Incluir lista de precio en productos"
 msgstr ""
 
 msgctxt "model:ir.action,name:update_price_list_by_product"
-msgid "Update prices list price"
+msgid "Update prices to list price"
 msgstr "Actualizar precio de las listas de precio"
 
 msgctxt "model:nodux_product_price_list_by_product.update.start,name:"
@@ -109,7 +125,7 @@ msgstr "Actualizar lista de Precio por Producto"
 
 msgctxt "model:product.list_by_product,name:"
 msgid "List By Product"
-msgstr ""
+msgstr "Lista de Precio por Producto"
 
 msgctxt "model:res.group,name:group_update_price_force"
 msgid "Nodux - Actualizar precio de lista de precio"
