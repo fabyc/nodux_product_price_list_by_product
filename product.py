@@ -129,14 +129,16 @@ class Template:
     @fields.depends('listas_precios', 'list_price', 'taxes_category', 'category',
         'list_price_with_tax', 'customer_taxes', 'cost_price')
     def on_change_listas_precios(self):
+        cont = 0
+
         if self.list_price_with_tax:
             price_with_tax = self.list_price_with_tax
         else:
             price_with_tax = Decimal(0.0)
 
         changes = {
-            'list_price_with_tax': self.list_price,
-            'list_price': price_with_tax,
+            'list_price_with_tax':price_with_tax, #self.list_price,
+            'list_price': self.list_price, #price_with_tax,
             }
         if self.listas_precios:
             for lista in self.listas_precios:
@@ -156,7 +158,13 @@ class Template:
     def validate(cls, products):
         for product in products:
             name_list = []
+            cont = 0
             for lists in product.listas_precios:
+                if lists.precio_venta == True:
+                    cont += 1
+                if cont > 1:
+                    product.raise_user_error('Debe definir solo una lista como precio de venta')
+
                 if lists.lista_precio.name in name_list:
                     product.raise_user_error('%s se encuentra duplicada', lists.lista_precio.name)
                 else:
@@ -342,9 +350,14 @@ class ListByProduct(ModelSQL, ModelView):
             return res
 
 
-    @fields.depends('_parent_template.list_price', '_parent_template.id', 'fijo', 'precio_venta')
+    @fields.depends('_parent_template.list_price', '_parent_template.id',
+        'fijo', 'precio_venta', 'lista_precio')
     def on_change_precio_venta(self):
         res= {}
+        if self.lista_precio.definir_precio_venta == True:
+            res['precio_venta'] = True
+        else:
+            res['precio_venta'] = False
         res['list_price'] = self.fijo
         self.template.list_price = res['list_price']
         return res
