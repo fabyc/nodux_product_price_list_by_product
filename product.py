@@ -354,10 +354,11 @@ class ListByProduct(ModelSQL, ModelView):
         'fijo', 'precio_venta', 'lista_precio')
     def on_change_precio_venta(self):
         res= {}
-        if self.lista_precio.definir_precio_venta == True:
-            res['precio_venta'] = True
-        else:
-            res['precio_venta'] = False
+        if self.lista_precio:
+            if self.lista_precio.definir_precio_venta == True:
+                res['precio_venta'] = True
+            else:
+                res['precio_venta'] = False
         res['list_price'] = self.fijo
         self.template.list_price = res['list_price']
         return res
