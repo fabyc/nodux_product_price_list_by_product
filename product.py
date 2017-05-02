@@ -54,7 +54,8 @@ class Template:
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
-
+        taxes1 = None
+        taxes2 = None
         Product = pool.get('product.product')
         products = Product.search([('template', '=', self.id)])
         for p in products:
@@ -109,6 +110,8 @@ class Template:
                     elif taxes2:
                         for t in taxes2:
                             iva = precio_final * t.tax.rate
+                    else:
+                        self.raise_user_error("La categoria seleccionada no tiene configurado impuestos")
 
                     precio_total = precio_final + iva
 
