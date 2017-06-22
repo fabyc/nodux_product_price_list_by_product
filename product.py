@@ -42,7 +42,6 @@ class Template:
         super(Template, cls).__setup__()
         cls.list_price_with_tax.states['readonly'] = Eval('active', True)
 
-
     @fields.depends('name')
     def on_change_name(self):
         if self.name:
@@ -127,6 +126,7 @@ class Template:
                 res['listas_precios'] = lineas
                 res['list_price'] = precio_para_venta
                 res['list_price_with_tax'] = precio_total_iva
+                res['cost_price_with_tax'] = self.get_cost_price_with_tax()
         return res
 
     @fields.depends('listas_precios', 'list_price', 'taxes_category', 'category',
@@ -227,6 +227,7 @@ class ListByProduct(ModelSQL, ModelView):
     @classmethod
     def search_rec_name(cls, lista_precio, clause):
         return [('lista_precio',) + tuple(clause[1:])]
+
 
     @fields.depends('_parent_template.cost_price', 'lista_precio', 'fijo',
         '_parent_template.taxes_category', '_parent_template.category',
@@ -423,6 +424,7 @@ class UpdatePriceListByProduct(ModelView):
         hash_method, hash_ = hash_.split('$', 1)
         assert hash_method == 'bcrypt'
         return hash_ == bcrypt.hashpw(password, hash_)
+
 
     @fields.depends('password')
     def on_change_password(self):
